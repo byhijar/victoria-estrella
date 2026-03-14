@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
-import { addMaterial } from '../services/materialService';
-import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus } from 'lucide-react';
+import { addMaterial, deleteMaterial, updateMaterial } from '../services/materialService';
+import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, AlertCircle } from 'lucide-react';
 
 const VictoriaMaterials = [
   'Plata con oro',
@@ -15,6 +15,7 @@ const Materials = () => {
   const { materials, loading } = useMaterials();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({ name: '', initialStockGrams: '' });
+  const [editingId, setEditingId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
 
@@ -27,12 +28,49 @@ const Materials = () => {
       return;
     }
 
+    // Duplicate check
+    const normalizedNewName = formData.name.trim().toLowerCase();
+    const isDuplicate = materials.some(m => 
+      m.name.trim().toLowerCase() === normalizedNewName && m.id !== editingId
+    );
+
+    if (isDuplicate) {
+      setError('Este material ya existe en el inventario');
+      return;
+    }
+
     try {
-      await addMaterial(formData);
+      if (editingId) {
+        await updateMaterial(editingId, {
+          name: formData.name.trim(),
+          initialStockGrams: parseFloat(formData.initialStockGrams),
+          // We also update currentStock if it's the same as initial, otherwise it might be tricky
+          // For MVP, we'll just update initial and name.
+        });
+      } else {
+        await addMaterial(formData);
+      }
       setFormData({ name: '', initialStockGrams: '' });
       setIsAdding(false);
+      setEditingId(null);
     } catch (err) {
       setError('Error: ' + err.message);
+    }
+  };
+
+  const handleEdit = (material) => {
+    setFormData({ name: material.name, initialStockGrams: material.initialStockGrams });
+    setEditingId(material.id);
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de eliminar este material?')) {
+      try {
+        await deleteMaterial(id);
+      } catch (err) {
+        setError('Error al eliminar: ' + err.message);
+      }
     }
   };
 
@@ -96,7 +134,9 @@ const Materials = () => {
 
       {isAdding && (
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-50 space-y-6 animate-in slide-in-from-top-4 duration-500">
-          <h3 className="font-display font-bold text-xl text-victoria-wine">Nuevo Tipo de Joya</h3>
+          <h3 className="font-display font-bold text-xl text-victoria-wine">
+            {editingId ? 'Editar Material' : 'Nuevo Tipo de Joya'}
+          </h3>
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Nombre del Material</label>
             <input 
@@ -121,7 +161,11 @@ const Materials = () => {
           <div className="flex gap-3 pt-2">
             <button 
               type="button"
-              onClick={() => setIsAdding(false)}
+              onClick={() => {
+                setIsAdding(false);
+                setEditingId(null);
+                setFormData({ name: '', initialStockGrams: '' });
+              }}
               className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold"
             >
               Cancelar
@@ -137,7 +181,7 @@ const Materials = () => {
       )}
 
       <div className="grid gap-4">
-        {materials.map((material) => (
+        {materials.filter(m => !m.deleted).map((material) => (
           <div key={material.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex justify-between items-center group hover:border-victoria-gold/20 transition-all">
             <div className="flex items-center gap-4">
                <div className="w-12 h-12 bg-victoria-wine/5 rounded-2xl flex items-center justify-center text-victoria-wine font-bold">
@@ -149,10 +193,18 @@ const Materials = () => {
                </div>
             </div>
             <div className="flex gap-1">
-              <button className="p-3 text-gray-300 hover:text-victoria-gold transition-colors">
+              <button 
+                onClick={() => handleEdit(material)}
+                className="p-3 text-gray-300 hover:text-victoria-gold transition-colors"
+                title="Editar"
+              >
                 <Edit2 size={18} />
               </button>
-              <button className="p-3 text-gray-300 hover:text-red-500 transition-colors">
+              <button 
+                onClick={() => handleDelete(material.id)}
+                className="p-3 text-gray-300 hover:text-red-500 transition-colors"
+                title="Eliminar"
+              >
                 <Trash2 size={18} />
               </button>
             </div>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, History, Settings, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Receipt, History, Settings, Sparkles, LogOut } from 'lucide-react';
 
-const Layout = ({ children }) => {
+const Layout = ({ children, onLogout }) => {
   return (
     <div className="min-h-screen bg-[#fcfcfc] flex flex-col font-sans">
       {/* Header */}
@@ -17,6 +17,13 @@ const Layout = ({ children }) => {
               <p className="text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase">Joyas de Plata</p>
             </div>
           </div>
+          <button 
+            onClick={onLogout}
+            className="p-2 text-gray-400 hover:text-victoria-red transition-colors rounded-lg hover:bg-gray-50"
+            title="Cerrar Sesión"
+          >
+            <LogOut size={20} />
+          </button>
         </div>
       </header>
 

@@ -27,3 +27,10 @@ export const updateMaterial = async (id, data) => {
   const docRef = doc(db, COLLECTION_NAME, id);
   return await updateDoc(docRef, data);
 };
+
+export const deleteMaterial = async (id) => {
+  const docRef = doc(db, COLLECTION_NAME, id);
+  // Note: For a complete system, we should probably check if there are sales associated before deleting
+  // but for the MVP simple delete is fine.
+  return await updateDoc(docRef, { deleted: true }); // Prefer soft-delete for history integrity
+};
