@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { addMaterial, deleteMaterial, updateMaterial } from '../services/materialService';
-import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, AlertCircle } from 'lucide-react';
+import { restockMaterial } from '../services/saleService';
+import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, AlertCircle, ArrowUpCircle } from 'lucide-react';
 
 const VictoriaMaterials = [
   'Plata con oro',
@@ -15,7 +16,9 @@ const Materials = () => {
   const { materials, loading } = useMaterials();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({ name: '', initialStockGrams: '' });
+  const [restockData, setRestockData] = useState({ materialId: '', materialName: '', gramsAdded: '' });
   const [editingId, setEditingId] = useState(null);
+  const [isRestocking, setIsRestocking] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
 
@@ -71,6 +74,28 @@ const Materials = () => {
       } catch (err) {
         setError('Error al eliminar: ' + err.message);
       }
+    }
+  };
+
+  const handleRestockInitiate = (material) => {
+    setRestockData({ materialId: material.id, materialName: material.name, gramsAdded: '' });
+    setIsRestocking(true);
+    setError('');
+  };
+
+  const handleRestockSubmit = async (e) => {
+    e.preventDefault();
+    if (!restockData.gramsAdded) return;
+    
+    setIsInitializing(true);
+    try {
+      await restockMaterial(restockData);
+      setIsRestocking(false);
+      setRestockData({ materialId: '', materialName: '', gramsAdded: '' });
+    } catch (err) {
+      setError('Error al sumar stock: ' + err.message);
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -180,6 +205,47 @@ const Materials = () => {
         </form>
       )}
 
+      {isRestocking && (
+         <form onSubmit={handleRestockSubmit} className="bg-white p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,128,0,0.04)] border border-green-50 space-y-6 animate-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center gap-3">
+               <div className="bg-green-50 p-3 rounded-2xl text-green-600">
+                  <ArrowUpCircle size={24} />
+               </div>
+               <h3 className="font-display font-bold text-xl text-gray-800">Cargar Stock: <span className="text-green-600 capitalize">{restockData.materialName}</span></h3>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">Gramos para Agregar</label>
+              <input 
+                type="number" 
+                step="0.01"
+                value={restockData.gramsAdded}
+                onChange={(e) => setRestockData({...restockData, gramsAdded: e.target.value})}
+                className="w-full p-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-green-500 text-lg"
+                placeholder="0.00"
+                autoFocus
+              />
+            </div>
+            {error && <p className="text-red-500 text-xs font-bold">{error}</p>}
+            <div className="flex gap-3 pt-2">
+              <button 
+                type="button"
+                onClick={() => setIsRestocking(false)}
+                className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit"
+                disabled={isInitializing}
+                className="flex-[2] py-4 bg-green-600 text-white rounded-2xl font-bold shadow-lg shadow-green-600/20 flex items-center justify-center"
+              >
+                {isInitializing ? <Loader2 className="animate-spin" size={20} /> : 'Sumar al Inventario'}
+              </button>
+            </div>
+         </form>
+      )}
+
       <div className="grid gap-4">
         {materials.filter(m => !m.deleted).map((material) => (
           <div key={material.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex justify-between items-center group hover:border-victoria-gold/20 transition-all">
@@ -193,6 +259,13 @@ const Materials = () => {
                </div>
             </div>
             <div className="flex gap-1">
+              <button 
+                onClick={() => handleRestockInitiate(material)}
+                className="p-3 text-gray-300 hover:text-green-600 transition-colors"
+                title="Sumar Stock"
+              >
+                <ArrowUpCircle size={18} />
+              </button>
               <button 
                 onClick={() => handleEdit(material)}
                 className="p-3 text-gray-300 hover:text-victoria-gold transition-colors"

@@ -39,20 +39,30 @@ const History = () => {
         {sales.map((sale) => {
           const { date, time } = formatDate(sale.createdAt);
           return (
-            <div key={sale.id} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-50 flex items-center justify-between group hover:border-victoria-gold/30 transition-all duration-300">
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-50 p-3 rounded-2xl text-victoria-gold group-hover:bg-victoria-wine group-hover:text-white transition-all">
-                  <ArrowDownCircle size={22} />
+            <div key={sale.id} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-gray-50 flex flex-col group hover:border-victoria-gold/30 transition-all duration-300">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h4 className="font-display font-bold text-victoria-wine group-hover:text-victoria-red transition-colors capitalize">
+                      {sale.materialName}
+                    </h4>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${sale.type === 'restock' ? 'bg-green-500' : 'bg-victoria-gold'}`} />
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                        {sale.type === 'restock' ? 'Ingreso de Stock' : 'Venta Registrada'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xl font-display font-bold ${sale.type === 'restock' ? 'text-green-600' : 'text-gray-800'}`}>
+                      {sale.type === 'restock' ? '+' : '-'}{sale.gramsSold}g
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-800 tracking-tight">{sale.materialName}</h4>
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
                     <span>{date}</span>
                     <span className="w-1 h-1 bg-gray-200 rounded-full" />
                     <span>{time}</span>
                   </div>
-                </div>
-              </div>
               <div className="text-right">
                 <div className="text-2xl font-display font-bold text-victoria-red">-{sale.gramsSold}g</div>
                 <div className="text-[10px] font-bold text-victoria-gold uppercase tracking-widest">Descontado</div>
