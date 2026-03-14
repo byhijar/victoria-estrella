@@ -99,6 +99,23 @@ const Materials = () => {
     }
   };
 
+  const handleMasterReset = async () => {
+    if (window.confirm('🚨 ¡ATENCIÓN! Esto borrará TODAS las ventas y materiales permanentemente. No lo hagas si no estás seguro.')) {
+      if (window.confirm('Confirma una segunda vez. Esta acción es definitiva.')) {
+        setIsInitializing(true);
+        try {
+          await wipeAllData();
+          alert('Sistema reseteado a 0. La página se recargará.');
+          window.location.reload();
+        } catch (err) {
+          setError('Error: ' + err.message);
+        } finally {
+          setIsInitializing(false);
+        }
+      }
+    }
+  };
+
   const initializeDefaultMaterials = async () => {
     setIsInitializing(true);
     try {
