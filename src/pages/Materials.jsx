@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
-import { addMaterial, deleteMaterial, updateMaterial } from '../services/materialService';
+import { addMaterial, deleteMaterial, updateMaterial, wipeAllData } from '../services/materialService';
 import { restockMaterial } from '../services/saleService';
 import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, AlertCircle, ArrowUpCircle } from 'lucide-react';
 
@@ -283,6 +283,18 @@ const Materials = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Danger Zone */}
+      <div className="mt-20 pt-10 border-t border-gray-100 flex flex-col items-center gap-4 text-center">
+        <h4 className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">Zona de Peligro</h4>
+        <button 
+          onClick={handleMasterReset}
+          disabled={isInitializing}
+          className="px-6 py-2 text-[10px] font-bold text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all border border-transparent hover:border-red-100"
+        >
+          Borrar Todo e Iniciar desde 0
+        </button>
       </div>
     </div>
   );
