@@ -1,10 +1,10 @@
 import React from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { useSales } from '../hooks/useSales';
-import { Package, TrendingUp, Calendar, Clock, Loader2, MinusCircle } from 'lucide-react';
+import { Package, TrendingUp, Calendar, Clock, Loader2, MinusCircle, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
-  const { materials, loading: loadingMaterials } = useMaterials();
+  const { materials, loading: loadingMaterials, error: errorMaterials } = useMaterials();
   const { sales, loading: loadingSales } = useSales();
 
   // Calculate stats

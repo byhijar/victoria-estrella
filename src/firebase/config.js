@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA94PgBABOSjQFubBMKJTM16LdTBANJwnk",
@@ -14,4 +14,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export const analytics = getAnalytics(app);
+export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
