@@ -65,7 +65,9 @@ const Dashboard = () => {
   }, [sales, materials]);
 
   // Inventory Value
-  const totalInventoryValue = materials.reduce((sum, m) => sum + ((m.currentStockGrams || 0) * (m.pricePerGram || 0)), 0);
+  const totalInventoryValue = materials
+    .filter(m => !m.deleted)
+    .reduce((sum, m) => sum + ((m.currentStockGrams || 0) * (m.pricePerGram || 0)), 0);
 
   if (loadingMaterials || loadingSales) {
     return (
@@ -171,7 +173,7 @@ const Dashboard = () => {
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Stock Actual</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {materials.map(material => (
+          {materials.filter(m => !m.deleted).map(material => (
             <StockCard 
               key={material.id}
               name={material.name}
