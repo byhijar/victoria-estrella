@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Sparkles, Lock, Loader2 } from 'lucide-react';
 
 const Login = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState('Romi');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const credentials = {
-    'Romi': 'romi2025',
-    'Patricia': 'paty2025'
+    'romi': 'romi2025',
+    'patricia': 'paty2025'
   };
 
   const handleSubmit = (e) => {
@@ -17,11 +17,15 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
+    const normalizedUser = username.trim().toLowerCase();
+
     setTimeout(() => {
-      if (password === credentials[user]) {
-        onLogin(user);
+      if (credentials[normalizedUser] && password === credentials[normalizedUser]) {
+        // Capitalize for display in the app
+        const displayUser = normalizedUser.charAt(0).toUpperCase() + normalizedUser.slice(1);
+        onLogin(displayUser);
       } else {
-        setError('Acceso denegado. La contraseña para este usuario es incorrecta.');
+        setError('Acceso denegado. Credenciales incorrectas.');
         setLoading(false);
       }
     }, 800);
@@ -44,41 +48,36 @@ const Login = ({ onLogin }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 text-center mb-4">
               <h2 className="text-lg font-bold text-gray-800 tracking-tight">Acceso Privado</h2>
-              <p className="text-xs text-gray-400">Selecciona tu usuario e ingresa la clave</p>
+              <p className="text-xs text-gray-400">Ingresa tus credenciales para continuar</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">¿Quién eres?</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setUser('Romi')}
-                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Romi' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                >
-                  Romi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUser('Patricia')}
-                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Patricia' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                >
-                  Patricia
-                </button>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-victoria-gold group-focus-within:text-victoria-red transition-colors">
-                <Lock size={18} />
-              </div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Usuario</label>
               <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={`Clave de ${user}`}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg transition-all"
+                type="text" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Nombre de usuario"
+                className="w-full px-5 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg transition-all"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Contraseña</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-victoria-gold group-focus-within:text-victoria-red transition-colors">
+                  <Lock size={18} />
+                </div>
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg transition-all font-sans"
+                  required
+                />
+              </div>
             </div>
 
             {error && (
@@ -97,7 +96,7 @@ const Login = ({ onLogin }) => {
               {loading ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
-                'Ingresar al Sistema'
+                'Entrar al Inventario'
               )}
             </button>
           </form>
