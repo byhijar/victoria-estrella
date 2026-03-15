@@ -7,18 +7,21 @@ const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const credentials = {
+    'Romi': 'romi2025',
+    'Patricia': 'paty2025'
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // For the MVP, we use a simple but effective access control
-    // In a real production environment, this would use Firebase Auth
     setTimeout(() => {
-      if (password === 'victoria2025') {
+      if (password === credentials[user]) {
         onLogin(user);
       } else {
-        setError('Acceso denegado. Contraseña incorrecta.');
+        setError('Acceso denegado. La contraseña para este usuario es incorrecta.');
         setLoading(false);
       }
     }, 800);
@@ -50,16 +53,16 @@ const Login = ({ onLogin }) => {
                 <button
                   type="button"
                   onClick={() => setUser('Romi')}
-                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Romi' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}
+                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Romi' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                 >
                   Romi
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUser('Socia')}
-                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Socia' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}
+                  onClick={() => setUser('Patricia')}
+                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Patricia' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                 >
-                  Socia (Trabajadora)
+                  Patricia
                 </button>
               </div>
             </div>
@@ -72,16 +75,18 @@ const Login = ({ onLogin }) => {
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Contraseña"
+                placeholder={`Clave de ${user}`}
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg transition-all"
                 required
               />
             </div>
 
             {error && (
-              <p className="text-red-500 text-xs font-bold text-center animate-bounce">
-                {error}
-              </p>
+              <div className="bg-red-50 p-4 rounded-xl border border-red-100 animate-in slide-in-from-top-2 duration-300">
+                <p className="text-red-500 text-[10px] font-bold text-center uppercase tracking-wider">
+                  {error}
+                </p>
+              </div>
             )}
 
             <button 
@@ -98,8 +103,9 @@ const Login = ({ onLogin }) => {
           </form>
         </div>
 
-        <p className="text-center text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-12">
-          Victoria Estrella © 2026 • Acceso Restringido
+        <p className="text-center text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-12 leading-loose">
+          Victoria Estrella © 2026 • Acceso Restringido<br/>
+          Propiedad de Romi Joyería
         </p>
       </div>
     </div>

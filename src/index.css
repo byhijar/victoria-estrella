@@ -12,10 +12,12 @@
 @layer base {
   :root {
     font-family: var(--font-sans);
-    line-height: 1.5;
-    font-weight: 400;
+    line-height: 1.6;
+    font-weight: 450; /* Slightly bolder for better contrast */
     color: #1a1a1a;
     background-color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
@@ -28,6 +30,11 @@
 
   input, textarea, select {
     color: #1a1a1a !important;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
   }
 
   #root {
