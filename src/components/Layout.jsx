@@ -17,13 +17,19 @@ const Layout = ({ children, onLogout }) => {
               <p className="text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase">Joyas de Plata</p>
             </div>
           </div>
-          <button 
-            onClick={onLogout}
-            className="p-2 text-gray-400 hover:text-victoria-red transition-colors rounded-lg hover:bg-gray-50"
-            title="Cerrar Sesión"
-          >
-            <LogOut size={20} />
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex flex-col items-end mr-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Usuario</span>
+              <span className="text-sm font-bold text-victoria-wine mt-1">{localStorage.getItem('victoria_user') || 'Romi'}</span>
+            </div>
+            <button 
+              onClick={onLogout}
+              className="p-2 text-gray-400 hover:text-victoria-red transition-colors rounded-lg hover:bg-gray-50 bg-gray-50/50"
+              title="Cerrar Sesión"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
       </header>
 

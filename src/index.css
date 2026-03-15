@@ -14,7 +14,6 @@
     font-family: var(--font-sans);
     line-height: 1.5;
     font-weight: 400;
-    color-scheme: light dark;
     color: #1a1a1a;
     background-color: #ffffff;
   }
@@ -24,17 +23,11 @@
     min-width: 320px;
     min-height: 100vh;
     background-color: #fcfcfc;
+    color: #1a1a1a;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color: #f6f6f6;
-      background-color: #242424;
-    }
-    body {
-      color: #f6f6f6;
-      background-color: #242424;
-    }
+  input, textarea, select {
+    color: #1a1a1a !important;
   }
 
   #root {

@@ -15,18 +15,24 @@ function App() {
     const authStatus = localStorage.getItem('victoria_auth');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
+      // Ensure victoria_user exists if authenticated, default to Romi
+      if (!localStorage.getItem('victoria_user')) {
+        localStorage.setItem('victoria_user', 'Romi');
+      }
     }
     setLoading(false);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (user) => {
     setIsAuthenticated(true);
     localStorage.setItem('victoria_auth', 'true');
+    localStorage.setItem('victoria_user', user);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('victoria_auth');
+    localStorage.removeItem('victoria_user');
   };
 
   if (loading) return null;

@@ -36,8 +36,7 @@ export const registerSale = async (saleData) => {
     // 1. Create sale record
     const saleRef = doc(collection(db, COLLECTION_NAME));
     transaction.set(saleRef, {
-      materialId,
-      materialName,
+      ...saleData,
       gramsSold: grams,
       type: 'sale', // New field to distinguish
       createdAt: new Date().toISOString()

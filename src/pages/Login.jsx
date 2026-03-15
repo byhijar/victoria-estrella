@@ -3,6 +3,7 @@ import { Sparkles, Lock, Loader2 } from 'lucide-react';
 
 const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
+  const [user, setUser] = useState('Romi');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,7 +16,7 @@ const Login = ({ onLogin }) => {
     // In a real production environment, this would use Firebase Auth
     setTimeout(() => {
       if (password === 'victoria2025') {
-        onLogin();
+        onLogin(user);
       } else {
         setError('Acceso denegado. Contraseña incorrecta.');
         setLoading(false);
@@ -40,7 +41,27 @@ const Login = ({ onLogin }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 text-center mb-4">
               <h2 className="text-lg font-bold text-gray-800 tracking-tight">Acceso Privado</h2>
-              <p className="text-xs text-gray-400">Ingresa la clave para gestionar tu inventario</p>
+              <p className="text-xs text-gray-400">Selecciona tu usuario e ingresa la clave</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">¿Quién eres?</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUser('Romi')}
+                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Romi' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}
+                >
+                  Romi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUser('Socia')}
+                  className={`py-3 rounded-xl font-bold transition-all ${user === 'Socia' ? 'bg-victoria-wine text-white shadow-lg' : 'bg-gray-50 text-gray-400'}`}
+                >
+                  Socia (Trabajadora)
+                </button>
+              </div>
             </div>
 
             <div className="relative group">

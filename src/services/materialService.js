@@ -19,6 +19,8 @@ export const addMaterial = async (material) => {
     ...material,
     initialStockGrams: parseFloat(material.initialStockGrams),
     currentStockGrams: parseFloat(material.initialStockGrams),
+    pricePerGram: parseFloat(material.pricePerGram || 0),
+    minStockThreshold: parseFloat(material.minStockThreshold || 20),
     createdAt: new Date().toISOString()
   });
 };
