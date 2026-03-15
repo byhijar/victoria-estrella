@@ -66,10 +66,15 @@ const History = () => {
                       </div>
                     </div>
                     
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end">
                       <span className={`text-lg font-display font-bold ${isRestock ? 'text-green-600' : 'text-victoria-red'}`}>
                         {isRestock ? '+' : '-'}{sale.gramsSold}g
                       </span>
+                      {sale.totalPrice && (
+                        <span className="text-[10px] font-bold text-gray-400">
+                          ${sale.totalPrice.toLocaleString('es-CL')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

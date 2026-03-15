@@ -34,25 +34,28 @@ const Dashboard = () => {
     return sales.reduce((acc, s) => {
       if (s.type === 'restock') return acc;
 
-      const price = getMaterialPrice(s.materialId);
-      const saleValue = (s.gramsSold || 0) * price;
+      // Use persisted price/total if available, fallback for legacy sales
+      const saleValue = s.totalPrice !== undefined 
+        ? s.totalPrice 
+        : (s.gramsSold || 0) * getMaterialPrice(s.materialId);
+        
       const isToday = s.createdAt.startsWith(today);
       const isThisWeek = s.createdAt >= startOfWeekStr;
       const isThisMonth = s.createdAt >= startOfMonthStr;
 
       if (isToday) {
-        acc.today.grams += s.gramsSold;
+        acc.today.grams += (s.gramsSold || 0);
         acc.today.money += saleValue;
         
         const user = s.sellerName || 'Romi';
         acc.today.byUser[user] = (acc.today.byUser[user] || 0) + saleValue;
       }
       if (isThisWeek) {
-        acc.week.grams += s.gramsSold;
+        acc.week.grams += (s.gramsSold || 0);
         acc.week.money += saleValue;
       }
       if (isThisMonth) {
-        acc.month.grams += s.gramsSold;
+        acc.month.grams += (s.gramsSold || 0);
         acc.month.money += saleValue;
       }
 

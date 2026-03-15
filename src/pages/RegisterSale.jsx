@@ -43,7 +43,9 @@ const RegisterSale = () => {
       await registerSale({
         ...formData,
         materialName: selectedMaterial.name,
-        sellerName: currentUser
+        sellerName: currentUser,
+        priceAtTimeOfSale: selectedMaterial.pricePerGram || 0,
+        totalPrice: totalPrice
       });
       
       setStatus({ type: 'success', message: '¡Venta registrada con éxito!' });
