@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { useSales } from '../hooks/useSales';
 import { Package, TrendingUp, Calendar, Clock, Loader2, MinusCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Package, TrendingUp, Calendar, Clock, Loader2, MinusCircle, AlertCircle
 const Dashboard = () => {
   const { materials, loading: loadingMaterials, error: errorMaterials } = useMaterials();
   const { sales, loading: loadingSales } = useSales();
-  const [isPrivate, setIsPrivate] = React.useState(() => {
+  const [isPrivate, setIsPrivate] = useState(() => {
     return localStorage.getItem('victoria_privacy') === 'true';
   });
 
@@ -22,7 +22,7 @@ const Dashboard = () => {
   };
 
   // Pre-calculate sums for daily, weekly, and monthly sales
-  const stats = React.useMemo(() => {
+  const stats = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     
     const startOfWeek = new Date();

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSales } from '../hooks/useSales';
 import { Loader2, ArrowDownCircle, Search, Calendar } from 'lucide-react';
 
