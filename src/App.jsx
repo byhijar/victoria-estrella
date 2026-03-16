@@ -6,19 +6,17 @@ import RegisterSale from './pages/RegisterSale';
 import History from './pages/History';
 import Materials from './pages/Materials';
 import Login from './pages/Login';
+import { initializeUsers } from './services/userService';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    initializeUsers(); // Ensure users exist
     const authStatus = localStorage.getItem('victoria_auth');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
-      // Ensure victoria_user exists if authenticated, default to Romi
-      if (!localStorage.getItem('victoria_user')) {
-        localStorage.setItem('victoria_user', 'Romi');
-      }
     }
     setLoading(false);
   }, []);
@@ -26,13 +24,15 @@ function App() {
   const handleLogin = (user) => {
     setIsAuthenticated(true);
     localStorage.setItem('victoria_auth', 'true');
-    localStorage.setItem('victoria_user', user);
+    localStorage.setItem('victoria_user', user.displayName);
+    localStorage.setItem('victoria_userId', user.id);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('victoria_auth');
     localStorage.removeItem('victoria_user');
+    localStorage.removeItem('victoria_userId');
   };
 
   if (loading) return null;

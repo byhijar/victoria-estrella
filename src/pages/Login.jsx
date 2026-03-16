@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Sparkles, Lock, Loader2 } from 'lucide-react';
+import { authenticateUser } from '../services/userService';
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -7,28 +6,25 @@ const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const credentials = {
-    'romi': 'romi2025',
-    'patricia': 'paty2025'
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     const normalizedUser = username.trim().toLowerCase();
 
-    setTimeout(() => {
-      if (credentials[normalizedUser] && password === credentials[normalizedUser]) {
-        // Capitalize for display in the app
-        const displayUser = normalizedUser.charAt(0).toUpperCase() + normalizedUser.slice(1);
-        onLogin(displayUser);
+    try {
+      const user = await authenticateUser(normalizedUser, password);
+      if (user) {
+        onLogin(user);
       } else {
         setError('Acceso denegado. Credenciales incorrectas.');
-        setLoading(false);
       }
-    }, 800);
+    } catch (err) {
+      setError('Error de conexión. Revisa tu internet.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

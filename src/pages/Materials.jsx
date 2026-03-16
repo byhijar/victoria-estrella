@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { addMaterial, deleteMaterial, updateMaterial, wipeAllData } from '../services/materialService';
 import { restockMaterial } from '../services/saleService';
-import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, ArrowUpCircle, Search, User } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, ArrowUpCircle, Search, User, Lock } from 'lucide-react';
 import { useSales } from '../hooks/useSales';
+import { getUser, updateUserProfile } from '../services/userService';
 
 const VictoriaMaterials = [
   { name: 'Plata con Oro', pricePerGram: 8500, initialStock: 50, minThreshold: 20 },
@@ -32,14 +33,49 @@ const Materials = () => {
   const [error, setError] = useState('');
   
   // Profile State
-  const [profileName, setProfileName] = useState(localStorage.getItem('victoria_user') || '');
+  const [userProfile, setUserProfile] = useState({ displayName: '', password: '' });
+  const [newPassword, setNewPassword] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
-  const handleUpdateProfile = (e) => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userId = localStorage.getItem('victoria_userId');
+      if (userId) {
+        const userData = await getUser(userId);
+        if (userData) {
+          setUserProfile({ displayName: userData.displayName, password: userData.password });
+        }
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    if (!profileName.trim()) return;
-    localStorage.setItem('victoria_user', profileName.trim());
-    alert('Nombre de perfil actualizado');
-    window.location.reload(); // Sync header
+    const userId = localStorage.getItem('victoria_userId');
+    if (!userId || !userProfile.displayName.trim()) return;
+
+    setIsUpdatingProfile(true);
+    try {
+      const updates = { displayName: userProfile.displayName.trim() };
+      if (newPassword.trim()) {
+        updates.password = newPassword.trim();
+      }
+
+      await updateUserProfile(userId, updates);
+      
+      localStorage.setItem('victoria_user', updates.displayName);
+      setNewPassword('');
+      alert('Perfil actualizado con éxito');
+      if (updates.password) {
+        alert('Tu contraseña ha cambiado. Úsala en tu próximo inicio de sesión.');
+      }
+      window.location.reload(); // To sync everything
+    } catch (err) {
+      setError('Error al actualizar perfil: ' + err.message);
+    } finally {
+      setIsUpdatingProfile(false);
+    }
   };
 
   // Calculate total sold per material
@@ -199,26 +235,59 @@ const Materials = () => {
 
       {/* Profile Section */}
       {!isAdding && (
-        <section className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-4 animate-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-2 mb-1">
-            <User size={14} className="text-victoria-gold" />
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Identidad del Vendedor</h3>
-          </div>
-          <form onSubmit={handleUpdateProfile} className="flex gap-3">
-            <div className="relative flex-1 group">
-              <input 
-                type="text" 
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className="w-full pl-5 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-bold text-victoria-wine transition-all"
-                placeholder="Tu nombre o alias"
-              />
+        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-6 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <User size={14} className="text-victoria-gold" />
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mi Cuenta</h3>
             </div>
+            <span className="text-[10px] font-bold text-victoria-wine/40 uppercase tracking-widest">
+              ID: {localStorage.getItem('victoria_userId')}
+            </span>
+          </div>
+
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Nombre de Pantalla</label>
+                <div className="relative group">
+                  <input 
+                    type="text" 
+                    value={userProfile.displayName}
+                    onChange={(e) => setUserProfile({...userProfile, displayName: e.target.value})}
+                    className="w-full pl-5 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-bold text-victoria-wine transition-all"
+                    placeholder="Tu nombre o alias"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Nueva Contraseña (opcional)</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-victoria-gold/30">
+                    <Lock size={16} />
+                  </div>
+                  <input 
+                    type="password" 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-sans transition-all"
+                    placeholder="Dejar vacío para no cambiar"
+                  />
+                </div>
+              </div>
+            </div>
+
             <button 
               type="submit"
-              className="bg-victoria-wine text-white px-8 rounded-2xl font-bold text-sm hover:bg-victoria-red shadow-lg shadow-victoria-wine/10 transition-all active:scale-95"
+              disabled={isUpdatingProfile}
+              className="w-full bg-victoria-wine text-white py-4 rounded-2xl font-bold hover:bg-victoria-red shadow-xl shadow-victoria-wine/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Guardar
+              {isUpdatingProfile ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                'Guardar Cambios de Perfil'
+              )}
             </button>
           </form>
         </section>
