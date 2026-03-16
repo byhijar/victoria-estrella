@@ -32,59 +32,6 @@ const Materials = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
   
-  // Profile State
-  const [userProfile, setUserProfile] = useState({ displayName: '', password: '' });
-  const [newPassword, setNewPassword] = useState('');
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userId = localStorage.getItem('victoria_userId');
-      if (userId) {
-        const userData = await getUser(userId);
-        if (userData) {
-          setUserProfile({ displayName: userData.displayName, password: userData.password });
-        }
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem('victoria_userId');
-    if (!userId || !userProfile.displayName.trim()) return;
-
-    setIsUpdatingProfile(true);
-    try {
-      const updates = { displayName: userProfile.displayName.trim() };
-      if (newPassword.trim()) {
-        updates.password = newPassword.trim();
-      }
-
-      await updateUserProfile(userId, updates);
-      
-      localStorage.setItem('victoria_user', updates.displayName);
-      setNewPassword('');
-      alert('Perfil actualizado con éxito');
-      if (updates.password) {
-        alert('Tu contraseña ha cambiado. Úsala en tu próximo inicio de sesión.');
-      }
-      window.location.reload(); // To sync everything
-    } catch (err) {
-      setError('Error al actualizar perfil: ' + err.message);
-    } finally {
-      setIsUpdatingProfile(false);
-    }
-  };
-
-  // Calculate total sold per material
-  const salesByMaterial = sales.reduce((acc, s) => {
-    if (s.type === 'restock') return acc;
-    acc[s.materialId] = (acc[s.materialId] || 0) + (s.gramsSold || 0);
-    return acc;
-  }, {});
-
   const filteredMaterials = (materials || [])
     .filter(m => !m.deleted)
     .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -233,65 +180,6 @@ const Materials = () => {
         </button>
       </div>
 
-      {/* Profile Section */}
-      {!isAdding && (
-        <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-6 animate-in slide-in-from-top-4 duration-500">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <User size={14} className="text-victoria-gold" />
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mi Cuenta</h3>
-            </div>
-            <span className="text-[10px] font-bold text-victoria-wine/40 uppercase tracking-widest">
-              ID: {localStorage.getItem('victoria_userId')}
-            </span>
-          </div>
-
-          <form onSubmit={handleUpdateProfile} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Nombre de Pantalla</label>
-                <div className="relative group">
-                  <input 
-                    type="text" 
-                    value={userProfile.displayName}
-                    onChange={(e) => setUserProfile({...userProfile, displayName: e.target.value})}
-                    className="w-full pl-5 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-bold text-victoria-wine transition-all"
-                    placeholder="Tu nombre o alias"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Nueva Contraseña (opcional)</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-victoria-gold/30">
-                    <Lock size={16} />
-                  </div>
-                  <input 
-                    type="password" 
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-sans transition-all"
-                    placeholder="Dejar vacío para no cambiar"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button 
-              type="submit"
-              disabled={isUpdatingProfile}
-              className="w-full bg-victoria-wine text-white py-4 rounded-2xl font-bold hover:bg-victoria-red shadow-xl shadow-victoria-wine/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isUpdatingProfile ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                'Guardar Cambios de Perfil'
-              )}
-            </button>
-          </form>
-        </section>
-      )}
 
       {!isAdding && materials.length > 0 && (
         <div className="relative group">

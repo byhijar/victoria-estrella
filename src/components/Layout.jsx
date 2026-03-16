@@ -1,8 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, History, Settings, Sparkles, LogOut } from 'lucide-react';
+import { LayoutDashboard, Receipt, History, Settings, Sparkles, LogOut, User as UserIcon } from 'lucide-react';
+import ProfileModal from './ProfileModal';
 
 const Layout = ({ children, onLogout }) => {
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-[#fcfcfc] flex flex-col font-sans">
       {/* Header */}
@@ -18,13 +21,21 @@ const Layout = ({ children, onLogout }) => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Usuario</span>
-              <span className="text-sm font-bold text-victoria-wine mt-1">{localStorage.getItem('victoria_user') || 'Romi'}</span>
-            </div>
+            <button 
+              onClick={() => setIsProfileOpen(true)}
+              className="flex items-center gap-3 p-1.5 pr-4 pl-1.5 rounded-2xl bg-gray-50/50 hover:bg-victoria-wine/5 border border-transparent hover:border-victoria-wine/10 transition-all group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-victoria-wine flex items-center justify-center shadow-lg shadow-victoria-wine/10">
+                <UserIcon size={16} className="text-victoria-gold" />
+              </div>
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cuenta</span>
+                <span className="text-xs font-bold text-victoria-wine mt-0.5 group-hover:text-victoria-red transition-colors">{localStorage.getItem('victoria_user') || 'Usuario'}</span>
+              </div>
+            </button>
             <button 
               onClick={onLogout}
-              className="p-2 text-gray-400 hover:text-victoria-red transition-colors rounded-lg hover:bg-gray-50 bg-gray-50/50"
+              className="p-2 text-gray-300 hover:text-victoria-red transition-colors rounded-xl hidden md:block"
               title="Cerrar Sesión"
             >
               <LogOut size={20} />
@@ -32,6 +43,13 @@ const Layout = ({ children, onLogout }) => {
           </div>
         </div>
       </header>
+
+      {/* Profile Modal */}
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        onLogout={onLogout} 
+      />
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 mb-24 overflow-x-hidden">
