@@ -12,30 +12,35 @@ const Layout = ({ children, onLogout }) => {
       <header className="bg-white border-b border-gray-100 px-4 py-5 sticky top-0 z-20 shadow-sm">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-victoria-wine p-2 rounded-lg">
+            <div className="bg-victoria-wine p-2 rounded-lg shrink-0">
               <Sparkles className="text-victoria-gold" size={20} />
             </div>
-            <div>
-              <h1 className="text-xl font-display font-bold text-victoria-wine leading-none">VICTORIA <span className="text-victoria-gold">ESTRELLA</span></h1>
-              <p className="text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase">Joyas de Plata</p>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-xl font-display font-bold text-victoria-wine leading-none truncate">
+                <span className="hidden sm:inline">VICTORIA </span>
+                <span className="text-victoria-gold">ESTRELLA</span>
+              </h1>
+              <p className="text-[8px] md:text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase truncate">Joyas de Plata</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
             <button 
               onClick={() => setIsProfileOpen(true)}
-              className="flex items-center gap-3 p-1.5 pr-4 pl-1.5 rounded-2xl bg-gray-50/50 hover:bg-victoria-wine/5 border border-transparent hover:border-victoria-wine/10 transition-all group"
+              className="flex items-center gap-2 md:gap-3 p-1 md:p-1.5 md:pr-4 md:pl-1.5 rounded-2xl bg-gray-50/50 hover:bg-victoria-wine/5 border border-transparent hover:border-victoria-wine/10 transition-all group"
             >
-              <div className="w-8 h-8 rounded-xl bg-victoria-wine flex items-center justify-center shadow-lg shadow-victoria-wine/10">
+              <div className="w-8 h-8 rounded-xl bg-victoria-wine flex items-center justify-center shadow-lg shadow-victoria-wine/10 shrink-0">
                 <UserIcon size={16} className="text-victoria-gold" />
               </div>
-              <div className="flex flex-col items-start leading-none">
+              <div className="hidden xs:flex flex-col items-start leading-none">
                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cuenta</span>
-                <span className="text-xs font-bold text-victoria-wine mt-0.5 group-hover:text-victoria-red transition-colors">{localStorage.getItem('victoria_user') || 'Usuario'}</span>
+                <span className="text-xs font-bold text-victoria-wine mt-0.5 group-hover:text-victoria-red transition-colors truncate max-w-[80px]">
+                  {localStorage.getItem('victoria_user') || 'Usuario'}
+                </span>
               </div>
             </button>
             <button 
               onClick={onLogout}
-              className="p-2 text-gray-300 hover:text-victoria-red transition-colors rounded-xl hidden md:block"
+              className="p-2 text-gray-300 hover:text-victoria-red transition-colors rounded-xl hidden sm:block"
               title="Cerrar Sesión"
             >
               <LogOut size={20} />
