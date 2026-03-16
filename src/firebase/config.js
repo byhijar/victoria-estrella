@@ -14,4 +14,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// Analytics is non-critical, let's load it safely
+export let analytics = null;
+if (typeof window !== 'undefined') {
+  isSupported().then(yes => {
+    if (yes) analytics = getAnalytics(app);
+  }).catch(err => console.error("Analytics not supported:", err));
+}
