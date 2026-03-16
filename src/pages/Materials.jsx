@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { addMaterial, deleteMaterial, updateMaterial, wipeAllData } from '../services/materialService';
 import { restockMaterial } from '../services/saleService';
-import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, ArrowUpCircle, Search } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, ArrowUpCircle, Search, User } from 'lucide-react';
 import { useSales } from '../hooks/useSales';
 
 const VictoriaMaterials = [
@@ -30,6 +30,17 @@ const Materials = () => {
   const [isRestocking, setIsRestocking] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
+  
+  // Profile State
+  const [profileName, setProfileName] = useState(localStorage.getItem('victoria_user') || '');
+
+  const handleUpdateProfile = (e) => {
+    e.preventDefault();
+    if (!profileName.trim()) return;
+    localStorage.setItem('victoria_user', profileName.trim());
+    alert('Nombre de perfil actualizado');
+    window.location.reload(); // Sync header
+  };
 
   // Calculate total sold per material
   const salesByMaterial = sales.reduce((acc, s) => {
@@ -176,7 +187,7 @@ const Materials = () => {
       <div className="flex justify-between items-end">
         <div>
            <h2 className="text-3xl font-display font-bold text-victoria-wine">Configuración</h2>
-           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Gestiona tus tipos de joyas</p>
+           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Personalización y Gestión</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
@@ -185,6 +196,33 @@ const Materials = () => {
           {isAdding ? <PackagePlus className="rotate-45" size={24} /> : <Plus size={24} />}
         </button>
       </div>
+
+      {/* Profile Section */}
+      {!isAdding && (
+        <section className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-4 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-2 mb-1">
+            <User size={14} className="text-victoria-gold" />
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Identidad del Vendedor</h3>
+          </div>
+          <form onSubmit={handleUpdateProfile} className="flex gap-3">
+            <div className="relative flex-1 group">
+              <input 
+                type="text" 
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                className="w-full pl-5 pr-4 py-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold font-bold text-victoria-wine transition-all"
+                placeholder="Tu nombre o alias"
+              />
+            </div>
+            <button 
+              type="submit"
+              className="bg-victoria-wine text-white px-8 rounded-2xl font-bold text-sm hover:bg-victoria-red shadow-lg shadow-victoria-wine/10 transition-all active:scale-95"
+            >
+              Guardar
+            </button>
+          </form>
+        </section>
+      )}
 
       {!isAdding && materials.length > 0 && (
         <div className="relative group">
