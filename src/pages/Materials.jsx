@@ -32,6 +32,13 @@ const Materials = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
   
+  // Calculate total sold per material
+  const salesByMaterial = sales.reduce((acc, s) => {
+    if (s.type === 'restock') return acc;
+    acc[s.materialId] = (acc[s.materialId] || 0) + (s.gramsSold || 0);
+    return acc;
+  }, {});
+  
   const filteredMaterials = (materials || [])
     .filter(m => !m.deleted)
     .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
