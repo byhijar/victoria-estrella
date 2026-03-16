@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+import { Sparkles, Lock, Loader2 } from 'lucide-react';
 import { authenticateUser } from '../services/userService';
 
 const Login = ({ onLogin }) => {
