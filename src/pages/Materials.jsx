@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { addMaterial, deleteMaterial, updateMaterial, wipeAllData } from '../services/materialService';
 import { restockMaterial } from '../services/saleService';
