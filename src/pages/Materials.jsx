@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useMaterials } from '../hooks/useMaterials';
 import { addMaterial, deleteMaterial, updateMaterial, wipeAllData } from '../services/materialService';
 import { restockMaterial } from '../services/saleService';
 import { Plus, Trash2, Edit2, Loader2, Sparkles, PackagePlus, ArrowUpCircle, Search, User, Lock } from 'lucide-react';
 import { useSales } from '../hooks/useSales';
-import { getUser, updateUserProfile } from '../services/userService';
 
 const VictoriaMaterials = [
   { name: 'Plata con Oro', pricePerGram: 8500, initialStock: 50, minThreshold: 20 },
@@ -32,16 +31,22 @@ const Materials = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState('');
   
-  // Calculate total sold per material
-  const salesByMaterial = sales.reduce((acc, s) => {
-    if (s.type === 'restock') return acc;
-    acc[s.materialId] = (acc[s.materialId] || 0) + (s.gramsSold || 0);
-    return acc;
-  }, {});
+  // Calculate total sold per material defensively
+  const salesByMaterial = useMemo(() => {
+    if (!sales || !Array.isArray(sales)) return {};
+    return sales.reduce((acc, s) => {
+      if (s.type === 'restock' || !s.materialId) return acc;
+      acc[s.materialId] = (acc[s.materialId] || 0) + (s.gramsSold || 0);
+      return acc;
+    }, {});
+  }, [sales]);
   
-  const filteredMaterials = (materials || [])
-    .filter(m => !m.deleted)
-    .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredMaterials = useMemo(() => {
+    const list = materials || [];
+    return list
+      .filter(m => !m.deleted)
+      .filter(m => (m.name || '').toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [materials, searchTerm]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,8 +59,8 @@ const Materials = () => {
 
     // Duplicate check
     const normalizedNewName = formData.name.trim().toLowerCase();
-    const isDuplicate = materials.some(m => 
-      m.name.trim().toLowerCase() === normalizedNewName && m.id !== editingId
+    const isDuplicate = Array.isArray(materials) && materials.some(m => 
+      (m.name || '').trim().toLowerCase() === normalizedNewName && m.id !== editingId
     );
 
     if (isDuplicate) {
@@ -86,8 +91,8 @@ const Materials = () => {
 
   const handleEdit = (material) => {
     setFormData({ 
-      name: material.name, 
-      initialStockGrams: material.initialStockGrams,
+      name: material.name || '', 
+      initialStockGrams: material.initialStockGrams || '',
       pricePerGram: material.pricePerGram || '',
       minStockThreshold: material.minStockThreshold || '20'
     });
@@ -106,7 +111,7 @@ const Materials = () => {
   };
 
   const handleRestockInitiate = (material) => {
-    setRestockData({ materialId: material.id, materialName: material.name, gramsAdded: '' });
+    setRestockData({ materialId: material.id, materialName: material.name || 'Joya', gramsAdded: '' });
     setIsRestocking(true);
     setError('');
   };
@@ -128,7 +133,7 @@ const Materials = () => {
   };
 
   const handleMasterReset = async () => {
-    if (window.confirm('🚨 ¡ATENCIÓN! Esto borrará TODAS las ventas y materiales permanentemente. No lo hagas si no estás seguro.')) {
+    if (window.confirm('🚨 ¡ATENCIÓN! Esto borrará TODAS las ventas y materiales permanentemente.')) {
       if (window.confirm('Confirma una segunda vez. Esta acción es definitiva.')) {
         setIsInitializing(true);
         try {
@@ -148,7 +153,7 @@ const Materials = () => {
     setIsInitializing(true);
     try {
       for (const material of VictoriaMaterials) {
-        if (!materials.some(m => m.name.toLowerCase() === material.name.toLowerCase())) {
+        if (!materials.some(m => (m.name || '').toLowerCase() === material.name.toLowerCase())) {
           await addMaterial({ 
             name: material.name, 
             initialStockGrams: material.initialStock, 
@@ -188,7 +193,7 @@ const Materials = () => {
       </div>
 
 
-      {!isAdding && materials.length > 0 && (
+      {!isAdding && filteredMaterials.length > 0 && (
         <div className="relative group">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
             <Search size={18} />
@@ -339,21 +344,21 @@ const Materials = () => {
 
       <div className="grid gap-4">
         {filteredMaterials.map((material) => {
-          const totalSold = salesByMaterial[material.id] || 0;
+          const totalSold = (salesByMaterial && material.id) ? (salesByMaterial[material.id] || 0) : 0;
           return (
             <div key={material.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex justify-between items-center group hover:border-victoria-gold/20 transition-all">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-victoria-wine/5 rounded-2xl flex items-center justify-center text-victoria-wine font-bold">
-                    {material.name.charAt(0)}
+                    {(material.name || 'J').charAt(0).toUpperCase()}
                  </div>
                   <div>
-                    <h4 className="font-bold text-gray-800 tracking-tight">{material.name}</h4>
+                    <h4 className="font-bold text-gray-800 tracking-tight capitalize">{material.name || 'Sin nombre'}</h4>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-0.5">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                        <span className="w-1 h-1 bg-gray-200 rounded-full" /> Stock: {material.currentStockGrams}g
+                        <span className="w-1 h-1 bg-gray-200 rounded-full" /> Stock: {(material.currentStockGrams || 0).toFixed(1)}g
                       </p>
                       <p className="text-[10px] font-bold text-victoria-gold uppercase tracking-widest">Precio: ${material.pricePerGram || 0}/g</p>
-                      <p className="text-[10px] font-bold text-victoria-red uppercase tracking-widest">Total Vendido: {totalSold.toFixed(1)}g</p>
+                      <p className="text-[10px] font-bold text-victoria-red uppercase tracking-widest">Vendido: {totalSold.toFixed(1)}g</p>
                     </div>
                   </div>
               </div>
@@ -383,12 +388,11 @@ const Materials = () => {
             </div>
           );
         })}
-        {filteredMaterials.length === 0 && materials.length > 0 && (
+        {filteredMaterials.length === 0 && materials && materials.length > 0 && (
           <div className="text-center py-10 text-gray-400 italic">No se encontraron materiales para "{searchTerm}"</div>
         )}
       </div>
 
-      {/* Danger Zone */}
       <div className="mt-20 pt-10 border-t border-gray-100 flex flex-col items-center gap-4 text-center">
         <h4 className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">Zona de Peligro</h4>
         <button 
