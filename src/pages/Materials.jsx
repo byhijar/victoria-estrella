@@ -22,7 +22,8 @@ const Materials = () => {
   const [formData, setFormData] = useState({ 
     name: '', 
     initialStockGrams: '', 
-    pricePerGram: '',
+    costPricePerGram: '',
+    sellPricePerGram: '',
     minStockThreshold: '' 
   });
   const [restockData, setRestockData] = useState({ materialId: '', materialName: '', gramsAdded: '' });
@@ -69,19 +70,25 @@ const Materials = () => {
     }
 
     try {
-      const materialData = {
-        name: formData.name.trim(),
-        initialStockGrams: parseFloat(formData.initialStockGrams),
-        pricePerGram: parseFloat(formData.pricePerGram || 0),
-        minStockThreshold: parseFloat(formData.minStockThreshold || 20)
-      };
-
+      const currentUser = localStorage.getItem('victoria_user') || 'Admin';
       if (editingId) {
-        await updateMaterial(editingId, materialData);
+        await updateMaterial(editingId, {
+          name: formData.name.trim(),
+          initialStockGrams: parseFloat(formData.initialStockGrams),
+          costPricePerGram: parseFloat(formData.costPricePerGram || 0),
+          sellPricePerGram: parseFloat(formData.sellPricePerGram || 0),
+          minStockThreshold: parseFloat(formData.minStockThreshold || 20)
+        });
       } else {
-        await addMaterial(materialData);
+        await addMaterial({
+          name: formData.name.trim(),
+          initialStockGrams: parseFloat(formData.initialStockGrams),
+          costPricePerGram: parseFloat(formData.costPricePerGram || 0),
+          sellPricePerGram: parseFloat(formData.sellPricePerGram || 0),
+          minStockThreshold: parseFloat(formData.minStockThreshold || 20)
+        }, currentUser);
       }
-      setFormData({ name: '', initialStockGrams: '', pricePerGram: '', minStockThreshold: '' });
+      setFormData({ name: '', initialStockGrams: '', costPricePerGram: '', sellPricePerGram: '', minStockThreshold: '' });
       setIsAdding(false);
       setEditingId(null);
     } catch (err) {
@@ -93,7 +100,8 @@ const Materials = () => {
     setFormData({ 
       name: material.name || '', 
       initialStockGrams: material.initialStockGrams || '',
-      pricePerGram: material.pricePerGram || '',
+      costPricePerGram: material.costPricePerGram || '',
+      sellPricePerGram: material.sellPricePerGram || material.pricePerGram || '',
       minStockThreshold: material.minStockThreshold || '20'
     });
     setEditingId(material.id);
@@ -103,7 +111,8 @@ const Materials = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este material?')) {
       try {
-        await deleteMaterial(id);
+        const currentUser = localStorage.getItem('victoria_user') || 'Admin';
+        await deleteMaterial(id, currentUser);
       } catch (err) {
         setError('Error al eliminar: ' + err.message);
       }
@@ -122,7 +131,8 @@ const Materials = () => {
     
     setIsInitializing(true);
     try {
-      await restockMaterial(restockData);
+      const currentUser = localStorage.getItem('victoria_user') || 'Admin';
+      await restockMaterial({ ...restockData, sellerName: currentUser });
       setIsRestocking(false);
       setRestockData({ materialId: '', materialName: '', gramsAdded: '' });
     } catch (err) {
@@ -181,8 +191,8 @@ const Materials = () => {
     <div className="space-y-10 animate-in fade-in duration-700">
       <div className="flex justify-between items-end">
         <div>
-           <h2 className="text-3xl font-display font-bold text-victoria-wine">Configuración</h2>
-           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Personalización y Gestión</p>
+           <h2 className="text-3xl font-display font-bold text-victoria-wine">Catálogo e Inventario</h2>
+           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Gestión de Joyas y Stock</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
@@ -258,13 +268,23 @@ const Materials = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Precio por Gramo ($)</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Precio Compra ($/g)</label>
               <input 
                 type="number" 
-                value={formData.pricePerGram}
-                onChange={(e) => setFormData({...formData, pricePerGram: e.target.value})}
+                value={formData.costPricePerGram}
+                onChange={(e) => setFormData({...formData, costPricePerGram: e.target.value})}
                 className="w-full p-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg"
-                placeholder="Ej: 5000"
+                placeholder="Ej: 4000"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-victoria-gold ml-2">Precio Venta ($/g)</label>
+              <input 
+                type="number" 
+                value={formData.sellPricePerGram}
+                onChange={(e) => setFormData({...formData, sellPricePerGram: e.target.value})}
+                className="w-full p-4 bg-gray-50 border-0 rounded-2xl focus:ring-2 focus:ring-victoria-gold text-lg"
+                placeholder="Ej: 6000"
               />
             </div>
             <div className="space-y-2">
@@ -285,7 +305,8 @@ const Materials = () => {
               onClick={() => {
                 setIsAdding(false);
                 setEditingId(null);
-                setFormData({ name: '', initialStockGrams: '', pricePerGram: '', minStockThreshold: '' });
+                setError('');
+                setFormData({ name: '', initialStockGrams: '', costPricePerGram: '', sellPricePerGram: '', minStockThreshold: '' });
               }}
               className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold"
             >
@@ -346,7 +367,7 @@ const Materials = () => {
         {filteredMaterials.map((material) => {
           const totalSold = (salesByMaterial && material.id) ? (salesByMaterial[material.id] || 0) : 0;
           return (
-            <div key={material.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex justify-between items-center group hover:border-victoria-gold/20 transition-all">
+            <div key={material.id} className="bg-white p-5 md:p-6 rounded-[2rem] shadow-sm border border-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group hover:border-victoria-gold/20 transition-all">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 bg-victoria-wine/5 rounded-2xl flex items-center justify-center text-victoria-wine font-bold">
                     {(material.name || 'J').charAt(0).toUpperCase()}
@@ -357,12 +378,20 @@ const Materials = () => {
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
                         <span className="w-1 h-1 bg-gray-200 rounded-full" /> Stock: {(material.currentStockGrams || 0).toFixed(1)}g
                       </p>
-                      <p className="text-[10px] font-bold text-victoria-gold uppercase tracking-widest">Precio: ${material.pricePerGram || 0}/g</p>
+                      <div className="flex flex-wrap bg-gray-50 px-2 py-1 rounded-lg gap-x-3 gap-y-1">
+                        <p className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Compra: <span className="text-gray-700">${material.costPricePerGram || 0}</span></p>
+                        <p className="text-[9px] font-bold text-victoria-wine uppercase tracking-tighter">Venta: <span className="text-victoria-wine font-black">${material.sellPricePerGram || material.pricePerGram || 0}</span></p>
+                        {material.costPricePerGram > 0 && (
+                          <p className="text-[9px] font-bold text-green-600 uppercase tracking-tighter">
+                            Margen: {Math.round((( (material.sellPricePerGram || material.pricePerGram || 0) - material.costPricePerGram) / material.costPricePerGram) * 100)}%
+                          </p>
+                        )}
+                      </div>
                       <p className="text-[10px] font-bold text-victoria-red uppercase tracking-widest">Vendido: {totalSold.toFixed(1)}g</p>
                     </div>
                   </div>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1 self-end sm:self-auto">
                 <button 
                   onClick={() => handleRestockInitiate(material)}
                   className="p-3 text-gray-300 hover:text-green-600 transition-colors"
@@ -393,14 +422,17 @@ const Materials = () => {
         )}
       </div>
 
-      <div className="mt-20 pt-10 border-t border-gray-100 flex flex-col items-center gap-4 text-center">
-        <h4 className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">Zona de Peligro</h4>
+      <div className="mt-32 pt-10 border-t border-gray-100 flex flex-col items-center gap-4 text-center opacity-30 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 text-gray-300">
+          <Lock size={12} />
+          <h4 className="text-[9px] font-bold uppercase tracking-[0.3em]">Administración Avanzada</h4>
+        </div>
         <button 
           onClick={handleMasterReset}
           disabled={isInitializing}
-          className="px-6 py-2 text-[10px] font-bold text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all border border-transparent hover:border-red-100"
+          className="px-6 py-2 text-[9px] font-bold text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all border border-gray-200 hover:border-red-100"
         >
-          Borrar Todo e Iniciar desde 0
+          Borrar Base de Datos y Reiniciar
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, updateDoc, doc, onSnapshot, query, orderBy, deleteDoc, writeBatch } from "firebase/firestore";
+import { collection, addDoc, getDocs, updateDoc, doc, onSnapshot, query, orderBy, deleteDoc, writeBatch, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 const COLLECTION_NAME = "materials";
@@ -14,27 +14,60 @@ export const subscribeToMaterials = (callback) => {
   });
 };
 
-export const addMaterial = async (material) => {
+export const addMaterial = async (material, creatorName) => {
+  const sellPrice = parseFloat(material.sellPricePerGram || material.pricePerGram || 0);
   return await addDoc(collection(db, COLLECTION_NAME), {
     ...material,
     initialStockGrams: parseFloat(material.initialStockGrams),
     currentStockGrams: parseFloat(material.initialStockGrams),
-    pricePerGram: parseFloat(material.pricePerGram || 0),
+    costPricePerGram: parseFloat(material.costPricePerGram || 0),
+    sellPricePerGram: sellPrice,
+    pricePerGram: sellPrice, // Sync for legacy compatibility
     minStockThreshold: parseFloat(material.minStockThreshold || 20),
     createdAt: new Date().toISOString()
   });
+
+  // Log movement
+  await addDoc(collection(db, "sales"), {
+    materialId: docRef.id,
+    materialName: material.name,
+    type: 'new_material',
+    sellerName: creatorName,
+    createdAt: new Date().toISOString()
+  });
+
+  return docRef;
 };
 
 export const updateMaterial = async (id, data) => {
   const docRef = doc(db, COLLECTION_NAME, id);
-  return await updateDoc(docRef, data);
+  const updates = { ...data };
+  
+  if (data.sellPricePerGram !== undefined) {
+    updates.pricePerGram = parseFloat(data.sellPricePerGram);
+  } else if (data.pricePerGram !== undefined) {
+    updates.sellPricePerGram = parseFloat(data.pricePerGram);
+  }
+
+  return await updateDoc(docRef, updates);
 };
 
-export const deleteMaterial = async (id) => {
+export const deleteMaterial = async (id, deleterName) => {
   const docRef = doc(db, COLLECTION_NAME, id);
-  // Note: For a complete system, we should probably check if there are sales associated before deleting
-  // but for the MVP simple delete is fine.
-  return await updateDoc(docRef, { deleted: true }); // Prefer soft-delete for history integrity
+  const materialSnap = await getDoc(docRef);
+  const materialData = materialSnap.data();
+
+  // Prefer soft-delete for history integrity
+  await updateDoc(docRef, { deleted: true });
+
+  // Log movement
+  await addDoc(collection(db, "sales"), {
+    materialId: id,
+    materialName: materialData.name,
+    type: 'delete_material',
+    sellerName: deleterName,
+    createdAt: new Date().toISOString()
+  });
 };
 
 export const wipeAllData = async () => {

@@ -28,7 +28,8 @@ export const authenticateUser = async (username, password) => {
 export const initializeUsers = async () => {
   const users = [
     { id: 'romi', username: 'romi', password: 'romi2025', displayName: 'Romi' },
-    { id: 'patricia', username: 'patricia', password: 'paty2025', displayName: 'Patricia' }
+    { id: 'patricia', username: 'patricia', password: 'paty2025', displayName: 'Patricia' },
+    { id: 'admin', username: 'admin', password: 'vgn-cs140f', displayName: 'Vitor Admin' }
   ];
 
   for (const user of users) {

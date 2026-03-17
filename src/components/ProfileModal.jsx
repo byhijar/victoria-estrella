@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Lock, Loader2, LogOut } from 'lucide-react';
+import { X, User, Lock, Loader2, LogOut, Sparkles } from 'lucide-react';
 import { getUser, updateUserProfile } from '../services/userService';
 
 const ProfileModal = ({ isOpen, onClose, onLogout }) => {
@@ -7,6 +7,17 @@ const ProfileModal = ({ isOpen, onClose, onLogout }) => {
   const [newPassword, setNewPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState('');
+  const [isDemo, setIsDemo] = useState(localStorage.getItem('victoria_demo_mode') === 'true');
+
+  const toggleDemo = () => {
+    const newVal = !isDemo;
+    setIsDemo(newVal);
+    localStorage.setItem('victoria_demo_mode', newVal.toString());
+    // Give a small delay for the user to see the toggle change before reloading
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -97,6 +108,27 @@ const ProfileModal = ({ isOpen, onClose, onLogout }) => {
               />
             </div>
             <p className="text-[9px] text-gray-400 text-center uppercase font-bold tracking-tighter">Opcional: Dejar vacío para mantener actual</p>
+          </div>
+
+          <div className="bg-victoria-gold/5 p-5 rounded-[1.8rem] border border-victoria-gold/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles size={14} className="text-victoria-gold" />
+                <span className="text-[10px] font-bold text-victoria-wine uppercase tracking-widest">Modo Demostración</span>
+              </div>
+              <button 
+                type="button"
+                onClick={toggleDemo}
+                className={`w-10 h-5 rounded-full transition-all relative ${isDemo ? 'bg-victoria-gold' : 'bg-gray-200'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isDemo ? 'left-5' : 'left-1'}`} />
+              </button>
+            </div>
+            <p className="text-[9px] text-gray-400 leading-relaxed font-bold uppercase tracking-tight">
+              {isDemo 
+                ? 'Activo: Estás viendo datos ficticios. Tu información real está segura.' 
+                : 'Inactivo: Estás viendo la información real de tu negocio.'}
+            </p>
           </div>
 
           {error && <p className="text-red-500 text-[10px] font-bold text-center uppercase">{error}</p>}
