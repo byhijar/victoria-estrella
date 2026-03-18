@@ -37,13 +37,17 @@ const Dashboard = () => {
 
   // Pre-calculate sums for daily, weekly, and monthly sales
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
+    // Current local time boundaries
+    const now = new Date();
     
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
+    // Start of today (local 00:00:00)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    const startOfMonthStr = new Date().toISOString().slice(0, 7) + '-01';
+    // Start of week (local Sunday 00:00:00)
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    
+    // Start of month (local 1st 00:00:00)
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     return sales.reduce((acc, s) => {
       if (s.type === 'restock') return acc;
@@ -58,10 +62,11 @@ const Dashboard = () => {
       const saleValue = s.totalPrice !== undefined ? Number(s.totalPrice) : grams * sellPrice;
       const profitValue = saleValue - (grams * costPrice);
         
-      const createdAt = s.createdAt || new Date().toISOString();
-      const isToday = typeof createdAt === 'string' && createdAt.startsWith(today);
-      const isThisWeek = typeof createdAt === 'string' && createdAt >= startOfWeekStr;
-      const isThisMonth = typeof createdAt === 'string' && createdAt >= startOfMonthStr;
+      // Parse record date
+      const createdAt = s.createdAt ? new Date(s.createdAt) : new Date();
+      const isToday = createdAt >= startOfToday;
+      const isThisWeek = createdAt >= startOfWeek;
+      const isThisMonth = createdAt >= startOfMonth;
 
       if (isToday) {
         acc.today.grams += grams;
