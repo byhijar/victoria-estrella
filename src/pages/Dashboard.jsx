@@ -50,7 +50,7 @@ const Dashboard = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     return sales.reduce((acc, s) => {
-      if (s.type === 'restock') return acc;
+      if (s.type === 'restock' || s.isVoided) return acc;
 
       const prices = getMaterialPrices(s.materialId);
       

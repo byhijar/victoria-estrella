@@ -84,3 +84,91 @@ export const restockMaterial = async (restockData) => {
     });
   });
 };
+export const voidSale = async (saleId, materialId, gramsToRestore, voidData) => {
+  const { reason, sellerName } = voidData;
+
+  return await runTransaction(db, async (transaction) => {
+    // 1. Get current material stock
+    const materialRef = doc(db, "materials", materialId);
+    const materialDoc = await transaction.get(materialRef);
+
+    if (!materialDoc.exists()) {
+      throw new Error("Material no existe");
+    }
+
+    const currentStock = materialDoc.data().currentStockGrams;
+    const newStock = currentStock + gramsToRestore;
+
+    // 2. Update sale record
+    const saleRef = doc(db, COLLECTION_NAME, saleId);
+    transaction.update(saleRef, {
+      isVoided: true,
+      voidedAt: new Date().toISOString(),
+      voidReason: reason,
+      voidedBy: sellerName
+    });
+
+    // 3. Restore material stock
+    transaction.update(materialRef, {
+      currentStockGrams: newStock
+    });
+  });
+};
+export const updateSale = async (saleId, materialId, originalGrams, newData, auditData) => {
+  const { gramsSold: newGrams, totalPrice: newTotal, sellPriceAtTimeOfSale: newPrice } = newData;
+  const { reason, sellerName } = auditData;
+
+  const diffGrams = parseFloat(newGrams) - parseFloat(originalGrams);
+
+  return await runTransaction(db, async (transaction) => {
+    // 1. Get current material stock
+    const materialRef = doc(db, "materials", materialId);
+    const materialDoc = await transaction.get(materialRef);
+
+    if (!materialDoc.exists()) {
+      throw new Error("Material no existe");
+    }
+
+    const currentStock = materialDoc.data().currentStockGrams;
+    const newStock = currentStock - diffGrams; // If diff is negative (grams decreased), stock increases
+
+    if (newStock < 0) {
+      throw new Error("Stock insuficiente para este ajuste");
+    }
+
+    // 2. Update sale record
+    const saleRef = doc(db, COLLECTION_NAME, saleId);
+    const saleDoc = await transaction.get(saleRef);
+    const saleData = saleDoc.data();
+    
+    const editEntry = {
+      timestamp: new Date().toISOString(),
+      reason,
+      editedBy: sellerName,
+      before: {
+        grams: originalGrams,
+        total: saleData.totalPrice,
+        price: saleData.sellPriceAtTimeOfSale
+      },
+      after: {
+        grams: newGrams,
+        total: newTotal,
+        price: newPrice
+      }
+    };
+
+    transaction.update(saleRef, {
+      gramsSold: parseFloat(newGrams),
+      totalPrice: parseFloat(newTotal),
+      sellPriceAtTimeOfSale: parseFloat(newPrice),
+      isEdited: true,
+      lastEditedAt: new Date().toISOString(),
+      editHistory: [...(saleData.editHistory || []), editEntry]
+    });
+
+    // 3. Update material stock
+    transaction.update(materialRef, {
+      currentStockGrams: newStock
+    });
+  });
+};

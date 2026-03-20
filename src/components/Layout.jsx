@@ -22,7 +22,10 @@ const Layout = ({ children, onLogout }) => {
                   <span className="hidden sm:inline">VICTORIA </span>
                   <span className="text-victoria-gold">ESTRELLA</span>
                 </h1>
-                <p className="text-[8px] md:text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase truncate">Joyas de Plata</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[8px] md:text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase truncate font-sans">Joyas de Plata</p>
+                  <span className="text-[7px] font-black text-victoria-wine/30 mt-1 border border-victoria-wine/10 px-1 rounded uppercase tracking-tighter">v1.2.0</span>
+                </div>
               </div>
               {isDemo && (
                 <span className="bg-victoria-gold/10 text-victoria-gold text-[7px] font-black px-1.5 py-0.5 rounded border border-victoria-gold/20 animate-pulse whitespace-nowrap">MODO DEMO</span>
