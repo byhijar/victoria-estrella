@@ -2,6 +2,14 @@
 
 Todas las versiones notables de este proyecto serán documentadas en este archivo.
 
+## [1.3.0] - 2026-03-20
+### Añadido
+- **Reporte Financiero Profesional**: El Excel exportado ahora es un reporte completo con:
+    - Encabezado con totales de Recaudación, Ganancia y Gramos.
+    - Cálculo de Ganancia neta por cada ítem vendido.
+    - Sección de Inventario con el valor actual de joyas en stock.
+- **Formato Excel Amigable**: Optimización de columnas y cabeceras para una lectura profesional en hojas de cálculo.
+
 ## [1.2.0] - 2026-03-20
 ### Añadido
 - **Edición Premium de Ventas**: Nuevo modal moderno y responsive que permite corregir gramos o precio de cualquier venta.

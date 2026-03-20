@@ -24,7 +24,7 @@ const Layout = ({ children, onLogout }) => {
                 </h1>
                 <div className="flex items-center gap-2">
                   <p className="text-[8px] md:text-[10px] tracking-[0.2em] font-bold text-gray-400 mt-1 uppercase truncate font-sans">Joyas de Plata</p>
-                  <span className="text-[7px] font-black text-victoria-wine/30 mt-1 border border-victoria-wine/10 px-1 rounded uppercase tracking-tighter">v1.2.0</span>
+                  <span className="text-[7px] font-black text-victoria-wine/30 mt-1 border border-victoria-wine/10 px-1 rounded uppercase tracking-tighter">v1.3.0</span>
                 </div>
               </div>
               {isDemo && (

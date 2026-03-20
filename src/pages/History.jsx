@@ -70,7 +70,7 @@ const History = () => {
 
   const handleExport = () => {
     const filename = `reporte_victoria_${new Date().toISOString().split('T')[0]}.csv`;
-    exportToCSV(filteredSales, filename);
+    exportToCSV(filteredSales, materials, filter, filename);
   };
 
   const handleVoid = async (reason) => {
