@@ -43,8 +43,10 @@ const Dashboard = () => {
     // Start of today (local 00:00:00)
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // Start of week (local Sunday 00:00:00)
-    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    // Start of week (local Monday 00:00:00)
+    const day = now.getDay();
+    const diff = now.getDate() - (day === 0 ? 6 : day - 1);
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), diff);
     
     // Start of month (local 1st 00:00:00)
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
